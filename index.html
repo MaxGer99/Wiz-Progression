@@ -66,8 +66,28 @@
             background: linear-gradient(90deg, #9b59b6, #8e44ad);
         }
 
+        #worldProgress .progress-bar.complete {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            animation: pulse 0.5s ease-in-out;
+        }
+
         #totalProgress .progress-bar {
             background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .celebration {
+            animation: celebrate 0.6s ease-in-out;
         }
 
         .current-quest {
@@ -124,6 +144,57 @@
             font-weight: bold;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .counter-display:hover {
+            background: rgba(40, 40, 40, 0.9);
+            transform: scale(1.05);
+        }
+
+        .counter-display:active {
+            transform: scale(0.95);
+        }
+
+        .reset-button {
+            margin-top: 15px;
+            width: 100%;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+
+        .reset-button:hover {
+            background: linear-gradient(90deg, #c0392b, #e74c3c);
+        }
+
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .notification.world-complete {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .notification.game-complete {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
 
         /* Control panel for easy updates */
@@ -238,22 +309,30 @@
         <div class="current-quest">
             <div class="current-quest-label">Current Quest (click to advance):</div>
             <div style="display: flex; gap: 10px; align-items: stretch;">
-                <div class="current-quest-text" id="currentQuest" onclick="advanceToNextQuest()" style="flex: 1;">
+                <button onclick="goBackQuest()" style="padding: 12px 15px; white-space: nowrap;">← Back</button>
+                <div class="current-quest-text" id="currentQuest" onclick="advanceQuest()" style="flex: 1;">
                     Loading quest information...
                 </div>
-                <button onclick="goBackQuest()" style="padding: 12px 15px; white-space: nowrap;">← Back</button>
+                <button onclick="advanceQuest()" style="padding: 12px 15px; white-space: nowrap;">Next →</button>
             </div>
         </div>
 
         <!-- Counter -->
         <div class="counter-section">
-            <div class="counter-label" id="counterLabel">Counter:</div>
-            <div class="counter-display" id="counterValue">0</div>
+            <div class="counter-label" id="counterLabel">Counter (click to increment):</div>
+            <div class="counter-display" id="counterValue" onclick="incrementCounter()">0</div>
         </div>
+
+        <!-- Notification overlay -->
+        <div class="notification" id="notification"></div>
+
+        <!-- Reset Button -->
+        <button class="reset-button" id="resetButton" onclick="resetProgress()" style="display: none;">🔄 Reset All Progress</button>
 
         <!-- Control Panel (hide this in OBS by adjusting the crop) -->
         <div class="control-panel">
-            <button class="toggle-controls" onclick="toggleControls()">Toggle Controls</button>
+            <button class="toggle-controls" onclick="toggleControls()">Show/Hide Settings</button>
+            <button class="toggle-controls" onclick="toggleResetButton()" style="margin-left: 10px;">Show/Hide Reset</button>
             
             <div id="controls" style="display: none;">
                 <h3>Update Overlay</h3>
@@ -292,15 +371,7 @@
                     <input type="number" id="worldTotal" min="1" value="100">
                 </div>
 
-                <div class="control-group">
-                    <label for="totalCurrent">Total Progress (current):</label>
-                    <input type="number" id="totalCurrent" min="0" value="0">
-                </div>
 
-                <div class="control-group">
-                    <label for="totalTotal">Total Progress (total):</label>
-                    <input type="number" id="totalTotal" min="1" value="100">
-                </div>
 
                 <div class="control-group">
                     <label for="questSelect">Current Quest:</label>
@@ -333,13 +404,44 @@
         let questDatabase = {};
         let worlds = {};
 
+        // World order for progression
+        const worldOrder = [
+            'Wizard City',
+            'Krokotopia',
+            'Marleybone',
+            'Mooshu',
+            'Dragonspyre',
+            'Celestia',
+            'Zafaria',
+            'Avalon',
+            'Azteca',
+            'Khrysalis',
+            'Polaris',
+            'Mirage',
+            'Empyrea',
+            'Karamelle',
+            'Lemuria',
+            'Novus',
+            'Wallaru'
+        ];
+
+        // Compute per-world totals from questDatabase
+        function computeWorldTotals() {
+            const totals = {};
+            Object.entries(questDatabase).forEach(([world, quests]) => {
+                totals[world] = Array.isArray(quests) ? quests.length : 0;
+            });
+            return totals;
+        }
+
         // Load quest data from JSON file
         async function loadQuestData() {
             try {
                 const response = await fetch('quests.json');
                 const data = await response.json();
-                questDatabase = data.questDatabase;
-                worlds = data.worldTotals;
+                questDatabase = data.questDatabase || {};
+                // Derive totals from questDatabase to avoid manual maintenance
+                worlds = computeWorldTotals();
             } catch (error) {
                 console.error('Error loading quest data:', error);
                 // Fallback to default data if JSON fails to load
@@ -354,14 +456,15 @@
             };
             worlds = {
                 'Wizard City': 39,
-                'Krokotopia': 11
+                'Krokotopia': 65
             };
         }
 
         function onWorldChange() {
             const world = document.getElementById('worldSelect').value;
-            if (world && worlds[world]) {
-                document.getElementById('worldTotal').value = worlds[world];
+            if (world) {
+                const total = questDatabase[world] ? questDatabase[world].length : (worlds[world] || 0);
+                document.getElementById('worldTotal').value = total;
                 // Populate quest dropdown
                 populateQuestDropdown(world);
             }
@@ -402,7 +505,7 @@
             }
         }
 
-        function advanceToNextQuest() {
+        function advanceQuest() {
             const world = document.getElementById('worldSelect').value;
             if (!world) {
                 console.log('No world selected');
@@ -421,7 +524,7 @@
 
             console.log('Current quest:', currentQuestText, 'Index:', currentIndex, 'Total quests:', questDatabase[world].length);
 
-            // If we found the current quest and there's a next one, advance
+            // If we found the current quest and there's a next one in this world, advance
             if (currentIndex !== -1 && currentIndex < questDatabase[world].length - 1) {
                 const nextQuest = questDatabase[world][currentIndex + 1];
                 const nextQuestName = typeof nextQuest === 'string' ? nextQuest : nextQuest.name;
@@ -432,8 +535,67 @@
                 document.getElementById('questText').value = nextQuestName;
                 document.getElementById('questSelect').value = nextQuestName;
                 updateOverlay();
+            } else if (currentIndex === questDatabase[world].length - 1) {
+                // At the end of the world, move to next world
+                console.log('At end of world, moving to next world');
+                moveToNextWorld();
             } else {
-                console.log('Cannot advance - at end of quest list or quest not found');
+                console.log('Cannot advance - quest not found');
+            }
+        }
+
+        function showNotification(message, type = 'default', duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show';
+            
+            if (type === 'world-complete') {
+                notification.classList.add('world-complete');
+            } else if (type === 'game-complete') {
+                notification.classList.add('game-complete');
+            }
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        function moveToNextWorld() {
+            const currentWorld = document.getElementById('worldSelect').value;
+            const currentWorldIndex = worldOrder.indexOf(currentWorld);
+            
+            if (currentWorldIndex !== -1 && currentWorldIndex < worldOrder.length - 1) {
+                const nextWorld = worldOrder[currentWorldIndex + 1];
+                
+                // Check if next world exists in database
+                if (questDatabase[nextWorld] && questDatabase[nextWorld].length > 0) {
+                    console.log('Moving to next world:', nextWorld);
+                    
+                    // Show notification
+                    showNotification('🎉 ' + currentWorld + ' Complete!\nMoving to ' + nextWorld, 'world-complete', 4000);
+                    
+                    // Update world selection after a short delay
+                    setTimeout(() => {
+                        document.getElementById('worldSelect').value = nextWorld;
+                        onWorldChange();
+                        
+                        // Set to first quest of new world
+                        const firstQuest = questDatabase[nextWorld][0];
+                        const firstQuestName = typeof firstQuest === 'string' ? firstQuest : firstQuest.name;
+                        
+                        document.getElementById('worldCurrent').value = 0;
+                        document.getElementById('questText').value = firstQuestName;
+                        document.getElementById('questSelect').value = firstQuestName;
+                        
+                        updateOverlay();
+                    }, 1500);
+                } else {
+                    console.log('Next world not available in database');
+                    showNotification('🎉 ' + currentWorld + ' Complete!\nAdd next world quests to continue', 'world-complete', 4000);
+                }
+            } else {
+                console.log('At the last world!');
+                showNotification('🎉 Congratulations!\nYou\'ve completed the Spiral!', 'game-complete', 5000);
             }
         }
 
@@ -478,8 +640,6 @@
                 worldName: localStorage.getItem('worldName') || 'Wizard City',
                 worldCurrent: localStorage.getItem('worldCurrent') || '0',
                 worldTotal: localStorage.getItem('worldTotal') || '39',
-                totalCurrent: localStorage.getItem('totalCurrent') || '0',
-                totalTotal: localStorage.getItem('totalTotal') || '100',
                 questText: localStorage.getItem('questText') || 'Unicorn Way',
                 counterText: localStorage.getItem('counterText') || 'Re-Rolls',
                 counterNum: localStorage.getItem('counterNum') || '0'
@@ -489,8 +649,6 @@
             document.getElementById('worldSelect').value = saved.worldName;
             document.getElementById('worldCurrent').value = saved.worldCurrent;
             document.getElementById('worldTotal').value = saved.worldTotal;
-            document.getElementById('totalCurrent').value = saved.totalCurrent;
-            document.getElementById('totalTotal').value = saved.totalTotal;
             document.getElementById('questText').value = saved.questText;
             document.getElementById('counterText').value = saved.counterText;
             document.getElementById('counterNum').value = saved.counterNum;
@@ -500,19 +658,35 @@
         }
 
         function updateDisplay(data) {
-            // Update world progress
-            const worldPercent = Math.min(100, Math.round((data.worldCurrent / data.worldTotal) * 100));
-            const questsLeft = Math.max(0, data.worldTotal - data.worldCurrent);
+            // Update world progress - increment by 1 to show completed quests
+            const worldProgressValue = Math.min(data.worldTotal, data.worldCurrent + 1);
+            const worldPercent = Math.min(100, Math.round((worldProgressValue / data.worldTotal) * 100));
+            const questsLeft = Math.max(0, data.worldTotal - data.worldCurrent - 1);
+            
             document.getElementById('worldLabel').textContent = data.worldName + ' Progress';
             document.getElementById('worldPercentage').textContent = worldPercent + '% (' + questsLeft + ' left)';
             document.getElementById('worldBar').style.width = worldPercent + '%';
-            document.getElementById('worldBarText').textContent = data.worldCurrent + '/' + data.worldTotal;
+            document.getElementById('worldBarText').textContent = worldProgressValue + '/' + data.worldTotal;
 
-            // Update total progress
-            const totalPercent = Math.min(100, Math.round((data.totalCurrent / data.totalTotal) * 100));
+            // Celebrate when world is complete
+            if (worldPercent === 100) {
+                const worldBar = document.getElementById('worldBar');
+                worldBar.classList.add('complete');
+                celebrate();
+                setTimeout(() => worldBar.classList.remove('complete'), 600);
+            } else {
+                document.getElementById('worldBar').classList.remove('complete');
+            }
+
+            // Update total progress based on all available quests (derived from questDatabase)
+            const totalAvailableQuests = Object.values(worldOrder)
+                .filter(w => questDatabase[w])
+                .reduce((sum, w) => sum + questDatabase[w].length, 0);
+            const totalCompletedQuests = calculateTotalCompletedQuests();
+            const totalPercent = Math.min(100, Math.round((totalCompletedQuests / totalAvailableQuests) * 100));
             document.getElementById('totalPercentage').textContent = totalPercent + '%';
             document.getElementById('totalBar').style.width = totalPercent + '%';
-            document.getElementById('totalBarText').textContent = data.totalCurrent + '/' + data.totalTotal;
+            document.getElementById('totalBarText').textContent = totalCompletedQuests + '/' + totalAvailableQuests;
 
             // Update current quest with area and type
             let questDisplay = data.questText;
@@ -541,13 +715,24 @@
             document.getElementById('counterValue').textContent = data.counterNum;
         }
 
+        function celebrate() {
+            // Play celebration animation
+            const container = document.querySelector('.container');
+            container.classList.add('celebration');
+            
+            // Optional: Create confetti-like effect with multiple pulses
+            const currentQuest = document.getElementById('currentQuest');
+            currentQuest.classList.add('celebration');
+            
+            // Play a sound effect (if you want to add one later)
+            // playSound('celebration.mp3');
+        }
+
         function updateOverlay() {
             const data = {
                 worldName: document.getElementById('worldSelect').value,
                 worldCurrent: parseInt(document.getElementById('worldCurrent').value),
                 worldTotal: parseInt(document.getElementById('worldTotal').value),
-                totalCurrent: parseInt(document.getElementById('totalCurrent').value),
-                totalTotal: parseInt(document.getElementById('totalTotal').value),
                 questText: document.getElementById('questText').value,
                 counterText: document.getElementById('counterText').value,
                 counterNum: parseInt(document.getElementById('counterNum').value)
@@ -562,9 +747,63 @@
             updateDisplay(data);
         }
 
+        function calculateTotalCompletedQuests() {
+            // Calculate total completed quests across all worlds
+            let total = 0;
+            
+            // Add quests from all completed worlds before current world
+            const currentWorld = document.getElementById('worldSelect').value;
+            const currentWorldIndex = worldOrder.indexOf(currentWorld);
+            
+            for (let i = 0; i < currentWorldIndex; i++) {
+                const world = worldOrder[i];
+                if (questDatabase[world]) {
+                    total += questDatabase[world].length;
+                }
+            }
+            
+            // Add current world progress
+            const currentQuestIndex = parseInt(document.getElementById('worldCurrent').value);
+            total += currentQuestIndex + 1; // +1 because index is 0-based but we want count
+            
+            return total;
+        }
+
+        function incrementCounter() {
+            const counterInput = document.getElementById('counterNum');
+            const currentValue = parseInt(counterInput.value) || 0;
+            counterInput.value = currentValue + 1;
+            updateOverlay();
+        }
+
         function toggleControls() {
             const controls = document.getElementById('controls');
             controls.style.display = controls.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleResetButton() {
+            const resetButton = document.getElementById('resetButton');
+            resetButton.style.display = resetButton.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                // Clear localStorage
+                localStorage.clear();
+                
+                // Reset to defaults
+                document.getElementById('worldSelect').value = 'Wizard City';
+                document.getElementById('worldCurrent').value = 0;
+                document.getElementById('worldTotal').value = 39;
+                document.getElementById('questText').value = 'Unicorn Way';
+                document.getElementById('counterText').value = 'Re-Rolls';
+                document.getElementById('counterNum').value = 0;
+                
+                onWorldChange();
+                updateOverlay();
+                
+                showNotification('Progress Reset!', 'default', 2000);
+            }
         }
 
         // Keyboard shortcuts for quick counter updates
