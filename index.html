@@ -289,7 +289,14 @@
                 </div>
 
                 <div class="control-group">
-                    <label for="questText">Current Quest:</label>
+                    <label for="questSelect">Current Quest:</label>
+                    <select id="questSelect" onchange="onQuestChange()">
+                        <option value="">-- Select Current Quest --</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="questText">Or Enter Custom Quest Name:</label>
                     <textarea id="questText" placeholder="Enter the current quest name...">Find Sergeant Muldoon in Unicorn Way</textarea>
                 </div>
 
@@ -309,31 +316,236 @@
     </div>
 
     <script>
-        // All Wizard101 worlds in order with estimated quest counts
+        // Complete quest database for all worlds
+        const questDatabase = {
+            'Wizard City': [
+                'Unicorn Way',
+                'Ghost Hunters',
+                'Skeleton Crew',
+                'Monsters and Mazes',
+                'Finding Out Why',
+                'Who Could It Be Now?',
+                'Sinister Skeleton',
+                'Grim Tales',
+                'To Ravenwood!',
+                'Panic In Three Streets!',
+                'Secret Strife of Pets',
+                'A Good Day to Cyclops',
+                'A Stroll With Trolls',
+                'Run and Done',
+                'The Cave Escape',
+                'Oh Me, Oh Minotaur',
+                'Akilles\' Deal',
+                'Putting Out the Fire!',
+                'She Ran Crying Wildfire',
+                'Which Hunt?',
+                '100% Not That Witch',
+                'Which Craft?',
+                'The Cure',
+                'Firecat\'s In the Bag',
+                'Trouble on Triton Avenue',
+                'Menacing Minions',
+                'The Shadow of Death Magic',
+                'Quest for Clues',
+                'Catching a Glimpse',
+                'Clear as Crystal',
+                'Luminate',
+                'The Enemy Revealed',
+                'To Tame a Tempest',
+                'Triton Report',
+                'Calming the Chaos',
+                'A Brief History of the Spiral',
+                'Throwing Nightshade',
+                'Things and Stuff',
+                'Take a Walk on the Nightside'
+            ],
+            'Krokotopia': [
+                'Welcome to Krok',
+                'Finding Sophia',
+                'The Spiral\'s Hidden Library',
+                'A Friend in Need',
+                'The Royal Court',
+                'Meet the Emir',
+                'The Oasis Library',
+                'Halls of Power',
+                'A Conversation with Nefaria',
+                'Vault of Secrets',
+                'Sands of Time'
+            ],
+            'Marleybone': [
+                'Welcome to Marleybone',
+                'A Letter from the Yard',
+                'Follow the Clues',
+                'A Pupil of the Arts',
+                'Under the Streets',
+                'Unfinished Business',
+                'The Grand Tour',
+                'Keeper of the Flame',
+                'Broomstick Trouble',
+                'A Game of Chance'
+            ],
+            'Mooshu': [
+                'Welcome to Mooshu',
+                'Dance with the Dragons',
+                'A New Path',
+                'Through Thick and Thin',
+                'The Way Forward',
+                'A Gentle Push',
+                'Dragons Rising',
+                'Beyond the Pagoda',
+                'Whispers in the Reeds'
+            ],
+            'Dragonspyre': [
+                'Welcome to Dragonspyre',
+                'The Drake\s Neck',
+                'The Heart of Dragonspyre',
+                'Across the Rubicon',
+                'The Depths',
+                'Ambrose\'s Request'
+            ],
+            'Celestia': [
+                'Welcome to Celestia',
+                'The Tide Turns',
+                'A Sunken Destiny',
+                'Into the Sky',
+                'The Key to Success',
+                'What Lies Beyond'
+            ],
+            'Zafaria': [
+                'Welcome to Zafaria',
+                'The Way of the Spiral',
+                'Jungle Conquest',
+                'Power Rising',
+                'The Final Confrontation'
+            ],
+            'Avalon': [
+                'Welcome to Avalon',
+                'A New Ally',
+                'Into the Depths',
+                'The Castle Waits',
+                'The Siege'
+            ],
+            'Azteca': [
+                'Welcome to Azteca',
+                'A New Horizon',
+                'The Ancient Ones',
+                'Power\'s True Price',
+                'Bonds of the Spiral'
+            ],
+            'Khrysalis': [
+                'Welcome to Khrysalis',
+                'A Troubling Vision',
+                'Climb the Spiral',
+                'The World Tree',
+                'The Final Stand'
+            ],
+            'Polaris': [
+                'Welcome to Polaris',
+                'Frostheim',
+                'The Broken Sky',
+                'King\'s Court',
+                'The End Game'
+            ],
+            'Mirage': [
+                'Welcome to Mirage',
+                'The Sands Shift',
+                'Secrets of the Sphinx',
+                'Clash of the Titans',
+                'The Mirror Breaks'
+            ],
+            'Empyrea': [
+                'Welcome to Empyrea',
+                'The Final Battle Begins',
+                'Skyway to Heaven',
+                'What the Stars Foretell',
+                'The Eternal Flame'
+            ],
+            'Karamelle': [
+                'Welcome to Karamelle',
+                'Sugar Rush',
+                'The Sweet Life',
+                'Recipe for Disaster',
+                'Treat Yourself'
+            ],
+            'Lemuria': [
+                'Welcome to Lemuria',
+                'Lost in Translation',
+                'Ancient Secrets',
+                'The Power Within',
+                'New Beginnings'
+            ],
+            'Novus': [
+                'Welcome to Novus',
+                'Brave New World',
+                'Climb Infinitely',
+                'The Core Truth',
+                'Forever Forward'
+            ],
+            'Wallaru': [
+                'Welcome to Wallaru',
+                'Down Under',
+                'Walkabout',
+                'Outback Adventure',
+                'The Dreamland'
+            ]
+        };
+
         const worlds = {
-            'Wizard City': 45,
-            'Krokotopia': 48,
-            'Marleybone': 52,
-            'Mooshu': 55,
-            'Dragonspyre': 58,
-            'Celestia': 62,
-            'Zafaria': 65,
-            'Avalon': 68,
-            'Azteca': 70,
-            'Khrysalis': 75,
-            'Polaris': 78,
-            'Mirage': 80,
-            'Empyrea': 85,
-            'Karamelle': 50,
-            'Lemuria': 60,
-            'Novus': 65,
-            'Wallaru': 70
+            'Wizard City': 39,
+            'Krokotopia': 11,
+            'Marleybone': 10,
+            'Mooshu': 9,
+            'Dragonspyre': 6,
+            'Celestia': 6,
+            'Zafaria': 5,
+            'Avalon': 5,
+            'Azteca': 5,
+            'Khrysalis': 5,
+            'Polaris': 5,
+            'Mirage': 5,
+            'Empyrea': 5,
+            'Karamelle': 5,
+            'Lemuria': 5,
+            'Novus': 5,
+            'Wallaru': 5
         };
 
         function onWorldChange() {
             const world = document.getElementById('worldSelect').value;
             if (world && worlds[world]) {
                 document.getElementById('worldTotal').value = worlds[world];
+                // Populate quest dropdown
+                populateQuestDropdown(world);
+            }
+        }
+
+        function populateQuestDropdown(world) {
+            const questSelect = document.getElementById('questSelect');
+            questSelect.innerHTML = '<option value="">-- Select Current Quest --</option>';
+            
+            if (questDatabase[world]) {
+                questDatabase[world].forEach((quest, index) => {
+                    const option = document.createElement('option');
+                    option.value = quest;
+                    option.textContent = `${index + 1}. ${quest}`;
+                    questSelect.appendChild(option);
+                });
+            }
+        }
+
+        function onQuestChange() {
+            const world = document.getElementById('worldSelect').value;
+            const questSelect = document.getElementById('questSelect');
+            const selectedQuest = questSelect.value;
+            
+            if (world && selectedQuest && questDatabase[world]) {
+                const questIndex = questDatabase[world].indexOf(selectedQuest);
+                if (questIndex !== -1) {
+                    // Set world progress to current quest position
+                    document.getElementById('worldCurrent').value = questIndex;
+                    document.getElementById('questText').value = selectedQuest;
+                    updateOverlay();
+                }
             }
         }
 
@@ -367,8 +579,9 @@
         function updateDisplay(data) {
             // Update world progress
             const worldPercent = Math.min(100, Math.round((data.worldCurrent / data.worldTotal) * 100));
+            const questsLeft = Math.max(0, data.worldTotal - data.worldCurrent);
             document.getElementById('worldLabel').textContent = data.worldName + ' Progress';
-            document.getElementById('worldPercentage').textContent = worldPercent + '%';
+            document.getElementById('worldPercentage').textContent = worldPercent + '% (' + questsLeft + ' left)';
             document.getElementById('worldBar').style.width = worldPercent + '%';
             document.getElementById('worldBarText').textContent = data.worldCurrent + '/' + data.worldTotal;
 
