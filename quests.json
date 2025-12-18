@@ -1,0 +1,338 @@
+{
+  "questDatabase": {
+    "Wizard City": [
+      {
+        "name": "Unicorn Way",
+        "type": "Explore + Talk"
+      },
+      {
+        "name": "Ghost Hunters",
+        "type": "Mob + Talk + Talk"
+      },
+      {
+        "name": "Skeleton Crew",
+        "type": "Mob + Talk"
+      },
+      {
+        "name": "Monsters and Mazes",
+        "type": "Explore + Talk"
+      },
+      {
+        "name": "Finding Out Why",
+        "type": "Interact + D&C + Explore + Talk"
+      },
+      {
+        "name": "Who Could It Be Now?",
+        "type": "Talk"
+      },
+      {
+        "name": "Sinister Skeleton",
+        "type": "Explore + Boss + Explore + Talk"
+      },
+      {
+        "name": "Grim Tales",
+        "type": "Talk + Talk"
+      },
+      {
+        "name": "To Ravenwood!",
+        "type": "Talk 4x"
+      },
+      {
+        "name": "Panic In Three Streets!",
+        "type": "Talk"
+      },
+      {
+        "name": "Secret Strife of Pets",
+        "type": "Interact + Explore + Mob + Explore + Interact + Explore + Talk 3x + Interact + Talk + Talk"
+      },
+      {
+        "name": "A Good Day to Cyclops",
+        "type": "Explore + Talk",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "A Stroll With Trolls",
+        "type": "Mob + Talk",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "Run and Done",
+        "type": "Talk 6x",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "The Cave Escape",
+        "type": "Mob + Explore + D&C + Interact 3x + Talk",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "Oh Me, Oh Minotaur",
+        "type": "Mob + Talk",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "Akilles' Deal",
+        "type": "Explore + Boss + Interact + Talk + Talk",
+        "area": "Cyclops Lane"
+      },
+      {
+        "name": "Putting Out the Fire!",
+        "type": "Talk + Mob + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "She Ran Crying Wildfire",
+        "type": "Talk + Mob + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "Which Hunt?",
+        "type": "Talk + Mob + Talk + Talk + D&C + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "100% Not That Witch",
+        "type": "D&C + Talk + Explore + Boss + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "Which Craft?",
+        "type": "Talk + Talk + Interact + Interact + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "The Cure",
+        "type": "Explore + Boss + Talk + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "Firecat's In the Bag",
+        "type": "Talk + Talk",
+        "area": "Firecat Alley"
+      },
+      {
+        "name": "Trouble on Triton Avenue",
+        "type": "Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Menacing Minions",
+        "type": "Mob + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "The Shadow of Death Magic",
+        "type": "Talk + D&C + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Quest for Clues",
+        "type": "D&C + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Catching a Glimpse",
+        "type": "Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Clear as Crystal",
+        "type": "Interact + D&C + Talk + Explore + Interact + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Luminate",
+        "type": "Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "The Enemy Revealed",
+        "type": "Explore + Boss + Talk + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "To Tame a Tempest",
+        "type": "Talk + Interact + Talk + Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Triton Report",
+        "type": "Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "Calming the Chaos",
+        "type": "Talk",
+        "area": "Triton Avenue"
+      },
+      {
+        "name": "A Brief History of the Spiral",
+        "type": "Talk + Explore + Explore + Boss + Explore + Talk",
+        "area": "Olde Town"
+      },
+      {
+        "name": "Throwing Nightshade",
+        "type": "Explore + Boss + Talk",
+        "area": "Olde Town"
+      },
+      {
+        "name": "Things and Stuff",
+        "type": "D&C + Talk + Talk",
+        "area": "Olde Town"
+      },
+      {
+        "name": "Take a Walk on the Nightside",
+        "type": "Explore + Talk + Explore + Talk + Talk",
+        "area": "Olde Town"
+      }
+    ],
+    "Krokotopia": [
+      "Welcome to Krok",
+      "Finding Sophia",
+      "The Spiral's Hidden Library",
+      "A Friend in Need",
+      "The Royal Court",
+      "Meet the Emir",
+      "The Oasis Library",
+      "Halls of Power",
+      "A Conversation with Nefaria",
+      "Vault of Secrets",
+      "Sands of Time"
+    ],
+    "Marleybone": [
+      "Welcome to Marleybone",
+      "A Letter from the Yard",
+      "Follow the Clues",
+      "A Pupil of the Arts",
+      "Under the Streets",
+      "Unfinished Business",
+      "The Grand Tour",
+      "Keeper of the Flame",
+      "Broomstick Trouble",
+      "A Game of Chance"
+    ],
+    "Mooshu": [
+      "Welcome to Mooshu",
+      "Dance with the Dragons",
+      "A New Path",
+      "Through Thick and Thin",
+      "The Way Forward",
+      "A Gentle Push",
+      "Dragons Rising",
+      "Beyond the Pagoda",
+      "Whispers in the Reeds"
+    ],
+    "Dragonspyre": [
+      "Welcome to Dragonspyre",
+      "The Drake's Neck",
+      "The Heart of Dragonspyre",
+      "Across the Rubicon",
+      "The Depths",
+      "Ambrose's Request"
+    ],
+    "Celestia": [
+      "Welcome to Celestia",
+      "The Tide Turns",
+      "A Sunken Destiny",
+      "Into the Sky",
+      "The Key to Success",
+      "What Lies Beyond"
+    ],
+    "Zafaria": [
+      "Welcome to Zafaria",
+      "The Way of the Spiral",
+      "Jungle Conquest",
+      "Power Rising",
+      "The Final Confrontation"
+    ],
+    "Avalon": [
+      "Welcome to Avalon",
+      "A New Ally",
+      "Into the Depths",
+      "The Castle Waits",
+      "The Siege"
+    ],
+    "Azteca": [
+      "Welcome to Azteca",
+      "A New Horizon",
+      "The Ancient Ones",
+      "Power's True Price",
+      "Bonds of the Spiral"
+    ],
+    "Khrysalis": [
+      "Welcome to Khrysalis",
+      "A Troubling Vision",
+      "Climb the Spiral",
+      "The World Tree",
+      "The Final Stand"
+    ],
+    "Polaris": [
+      "Welcome to Polaris",
+      "Frostheim",
+      "The Broken Sky",
+      "King's Court",
+      "The End Game"
+    ],
+    "Mirage": [
+      "Welcome to Mirage",
+      "The Sands Shift",
+      "Secrets of the Sphinx",
+      "Clash of the Titans",
+      "The Mirror Breaks"
+    ],
+    "Empyrea": [
+      "Welcome to Empyrea",
+      "The Final Battle Begins",
+      "Skyway to Heaven",
+      "What the Stars Foretell",
+      "The Eternal Flame"
+    ],
+    "Karamelle": [
+      "Welcome to Karamelle",
+      "Sugar Rush",
+      "The Sweet Life",
+      "Recipe for Disaster",
+      "Treat Yourself"
+    ],
+    "Lemuria": [
+      "Welcome to Lemuria",
+      "Lost in Translation",
+      "Ancient Secrets",
+      "The Power Within",
+      "New Beginnings"
+    ],
+    "Novus": [
+      "Welcome to Novus",
+      "Brave New World",
+      "Climb Infinitely",
+      "The Core Truth",
+      "Forever Forward"
+    ],
+    "Wallaru": [
+      "Welcome to Wallaru",
+      "Down Under",
+      "Walkabout",
+      "Outback Adventure",
+      "The Dreamland"
+    ]
+  },
+  "worldTotals": {
+    "Wizard City": 39,
+    "Krokotopia": 11,
+    "Marleybone": 10,
+    "Mooshu": 9,
+    "Dragonspyre": 6,
+    "Celestia": 6,
+    "Zafaria": 5,
+    "Avalon": 5,
+    "Azteca": 5,
+    "Khrysalis": 5,
+    "Polaris": 5,
+    "Mirage": 5,
+    "Empyrea": 5,
+    "Karamelle": 5,
+    "Lemuria": 5,
+    "Novus": 5,
+    "Wallaru": 5
+  }
+}
