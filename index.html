@@ -90,6 +90,17 @@
             font-size: 15px;
             line-height: 1.4;
             min-height: 50px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .current-quest-text:hover {
+            background: rgba(40, 40, 40, 0.9);
+            transform: scale(1.02);
+        }
+
+        .current-quest-text:active {
+            transform: scale(0.98);
         }
 
         .counter-section {
@@ -225,9 +236,12 @@
 
         <!-- Current Quest -->
         <div class="current-quest">
-            <div class="current-quest-label">Current Quest:</div>
-            <div class="current-quest-text" id="currentQuest">
-                Loading quest information...
+            <div class="current-quest-label">Current Quest (click to advance):</div>
+            <div style="display: flex; gap: 10px; align-items: stretch;">
+                <div class="current-quest-text" id="currentQuest" onclick="advanceToNextQuest()" style="flex: 1;">
+                    Loading quest information...
+                </div>
+                <button onclick="goBackQuest()" style="padding: 12px 15px; white-space: nowrap;">← Back</button>
             </div>
         </div>
 
@@ -297,7 +311,7 @@
                 
                 <div class="control-group">
                     <label for="questText">Or Enter Custom Quest Name:</label>
-                    <textarea id="questText" placeholder="Enter the current quest name...">Find Sergeant Muldoon in Unicorn Way</textarea>
+                    <textarea id="questText" placeholder="Enter the current quest name...">Unicorn Way</textarea>
                 </div>
 
                 <div class="control-group">
@@ -388,15 +402,85 @@
             }
         }
 
+        function advanceToNextQuest() {
+            const world = document.getElementById('worldSelect').value;
+            if (!world) {
+                console.log('No world selected');
+                return;
+            }
+            if (!questDatabase[world]) {
+                console.log('Quest database not loaded for world:', world);
+                return;
+            }
+
+            const currentQuestText = document.getElementById('questText').value;
+            const currentIndex = questDatabase[world].findIndex(q => {
+                const qName = typeof q === 'string' ? q : q.name;
+                return qName === currentQuestText;
+            });
+
+            console.log('Current quest:', currentQuestText, 'Index:', currentIndex, 'Total quests:', questDatabase[world].length);
+
+            // If we found the current quest and there's a next one, advance
+            if (currentIndex !== -1 && currentIndex < questDatabase[world].length - 1) {
+                const nextQuest = questDatabase[world][currentIndex + 1];
+                const nextQuestName = typeof nextQuest === 'string' ? nextQuest : nextQuest.name;
+                
+                console.log('Advancing to next quest:', nextQuestName);
+                
+                document.getElementById('worldCurrent').value = currentIndex + 1;
+                document.getElementById('questText').value = nextQuestName;
+                document.getElementById('questSelect').value = nextQuestName;
+                updateOverlay();
+            } else {
+                console.log('Cannot advance - at end of quest list or quest not found');
+            }
+        }
+
+        function goBackQuest() {
+            const world = document.getElementById('worldSelect').value;
+            if (!world) {
+                console.log('No world selected');
+                return;
+            }
+            if (!questDatabase[world]) {
+                console.log('Quest database not loaded for world:', world);
+                return;
+            }
+
+            const currentQuestText = document.getElementById('questText').value;
+            const currentIndex = questDatabase[world].findIndex(q => {
+                const qName = typeof q === 'string' ? q : q.name;
+                return qName === currentQuestText;
+            });
+
+            console.log('Going back from quest:', currentQuestText, 'Index:', currentIndex);
+
+            // If we found the current quest and there's a previous one, go back
+            if (currentIndex > 0) {
+                const prevQuest = questDatabase[world][currentIndex - 1];
+                const prevQuestName = typeof prevQuest === 'string' ? prevQuest : prevQuest.name;
+                
+                console.log('Going back to previous quest:', prevQuestName);
+                
+                document.getElementById('worldCurrent').value = currentIndex - 1;
+                document.getElementById('questText').value = prevQuestName;
+                document.getElementById('questSelect').value = prevQuestName;
+                updateOverlay();
+            } else {
+                console.log('Cannot go back - at beginning of quest list');
+            }
+        }
+
         // Load saved values from localStorage
         function loadSavedValues() {
             const saved = {
                 worldName: localStorage.getItem('worldName') || 'Wizard City',
                 worldCurrent: localStorage.getItem('worldCurrent') || '0',
-                worldTotal: localStorage.getItem('worldTotal') || '45',
+                worldTotal: localStorage.getItem('worldTotal') || '39',
                 totalCurrent: localStorage.getItem('totalCurrent') || '0',
                 totalTotal: localStorage.getItem('totalTotal') || '100',
-                questText: localStorage.getItem('questText') || 'Find Sergeant Muldoon in Unicorn Way',
+                questText: localStorage.getItem('questText') || 'Unicorn Way',
                 counterText: localStorage.getItem('counterText') || 'Re-Rolls',
                 counterNum: localStorage.getItem('counterNum') || '0'
             };
@@ -430,8 +514,27 @@
             document.getElementById('totalBar').style.width = totalPercent + '%';
             document.getElementById('totalBarText').textContent = data.totalCurrent + '/' + data.totalTotal;
 
-            // Update current quest
-            document.getElementById('currentQuest').textContent = data.questText;
+            // Update current quest with area and type
+            let questDisplay = data.questText;
+            const world = document.getElementById('worldSelect').value;
+            if (world && questDatabase[world]) {
+                const questObj = questDatabase[world].find(q => {
+                    const qName = typeof q === 'string' ? q : q.name;
+                    return qName === data.questText;
+                });
+                
+                if (questObj && typeof questObj === 'object') {
+                    let display = questObj.name;
+                    if (questObj.area) {
+                        display += '\n[' + questObj.area + ']';
+                    }
+                    if (questObj.type) {
+                        display += '\n' + questObj.type;
+                    }
+                    questDisplay = display;
+                }
+            }
+            document.getElementById('currentQuest').textContent = questDisplay;
 
             // Update counter
             document.getElementById('counterLabel').textContent = data.counterText + ':';
