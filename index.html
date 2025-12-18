@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizard101 Progression Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-section {
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: rgba(50, 50, 50, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90e2, #63b3ed);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        #worldProgress .progress-bar {
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+        }
+
+        #totalProgress .progress-bar {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+
+        .current-quest {
+            margin-bottom: 20px;
+        }
+
+        .current-quest-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #63b3ed;
+        }
+
+        .current-quest-text {
+            background: rgba(30, 30, 30, 0.8);
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #63b3ed;
+            font-size: 15px;
+            line-height: 1.4;
+            min-height: 50px;
+        }
+
+        .counter-section {
+            margin-top: 20px;
+        }
+
+        .counter-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #f39c12;
+        }
+
+        .counter-display {
+            background: rgba(30, 30, 30, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Control panel for easy updates */
+        .control-panel {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-panel h3 {
+            margin-bottom: 15px;
+            color: #63b3ed;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #bbb;
+        }
+
+        .control-group input,
+        .control-group textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(50, 50, 50, 0.8);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .control-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .control-group input[type="number"] {
+            width: 100px;
+        }
+
+        button {
+            background: linear-gradient(90deg, #4a90e2, #63b3ed);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .toggle-controls {
+            margin-bottom: 15px;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(50, 50, 50, 0.8);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- World Progress Bar -->
+        <div class="progress-section" id="worldProgress">
+            <div class="progress-label">
+                <span id="worldLabel">World Progress</span>
+                <span id="worldPercentage">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="worldBar" style="width: 0%;">
+                    <span id="worldBarText"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Progress Bar -->
+        <div class="progress-section" id="totalProgress">
+            <div class="progress-label">
+                <span id="totalLabel">Total Progression</span>
+                <span id="totalPercentage">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="totalBar" style="width: 0%;">
+                    <span id="totalBarText"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Quest -->
+        <div class="current-quest">
+            <div class="current-quest-label">Current Quest:</div>
+            <div class="current-quest-text" id="currentQuest">
+                Loading quest information...
+            </div>
+        </div>
+
+        <!-- Counter -->
+        <div class="counter-section">
+            <div class="counter-label" id="counterLabel">Counter:</div>
+            <div class="counter-display" id="counterValue">0</div>
+        </div>
+
+        <!-- Control Panel (hide this in OBS by adjusting the crop) -->
+        <div class="control-panel">
+            <button class="toggle-controls" onclick="toggleControls()">Toggle Controls</button>
+            
+            <div id="controls" style="display: none;">
+                <h3>Update Overlay</h3>
+                
+                <div class="control-group">
+                    <label for="worldSelect">Select World:</label>
+                    <select id="worldSelect" onchange="onWorldChange()">
+                        <option value="">-- Choose a World --</option>
+                        <option value="Wizard City">Wizard City</option>
+                        <option value="Krokotopia">Krokotopia</option>
+                        <option value="Marleybone">Marleybone</option>
+                        <option value="Mooshu">Mooshu</option>
+                        <option value="Dragonspyre">Dragonspyre</option>
+                        <option value="Celestia">Celestia</option>
+                        <option value="Zafaria">Zafaria</option>
+                        <option value="Avalon">Avalon</option>
+                        <option value="Azteca">Azteca</option>
+                        <option value="Khrysalis">Khrysalis</option>
+                        <option value="Polaris">Polaris</option>
+                        <option value="Mirage">Mirage</option>
+                        <option value="Empyrea">Empyrea</option>
+                        <option value="Karamelle">Karamelle</option>
+                        <option value="Lemuria">Lemuria</option>
+                        <option value="Novus">Novus</option>
+                        <option value="Wallaru">Wallaru</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="worldCurrent">World Progress (current):</label>
+                    <input type="number" id="worldCurrent" min="0" value="0">
+                </div>
+
+                <div class="control-group">
+                    <label for="worldTotal">World Progress (total):</label>
+                    <input type="number" id="worldTotal" min="1" value="100">
+                </div>
+
+                <div class="control-group">
+                    <label for="totalCurrent">Total Progress (current):</label>
+                    <input type="number" id="totalCurrent" min="0" value="0">
+                </div>
+
+                <div class="control-group">
+                    <label for="totalTotal">Total Progress (total):</label>
+                    <input type="number" id="totalTotal" min="1" value="100">
+                </div>
+
+                <div class="control-group">
+                    <label for="questText">Current Quest:</label>
+                    <textarea id="questText" placeholder="Enter the current quest name...">Find Sergeant Muldoon in Unicorn Way</textarea>
+                </div>
+
+                <div class="control-group">
+                    <label for="counterText">Counter Label:</label>
+                    <input type="text" id="counterText" placeholder="e.g., Deaths, Battles" value="Re-Rolls">
+                </div>
+
+                <div class="control-group">
+                    <label for="counterNum">Counter Value:</label>
+                    <input type="number" id="counterNum" min="0" value="0">
+                </div>
+
+                <button onclick="updateOverlay()">Update Display</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // All Wizard101 worlds in order with estimated quest counts
+        const worlds = {
+            'Wizard City': 45,
+            'Krokotopia': 48,
+            'Marleybone': 52,
+            'Mooshu': 55,
+            'Dragonspyre': 58,
+            'Celestia': 62,
+            'Zafaria': 65,
+            'Avalon': 68,
+            'Azteca': 70,
+            'Khrysalis': 75,
+            'Polaris': 78,
+            'Mirage': 80,
+            'Empyrea': 85,
+            'Karamelle': 50,
+            'Lemuria': 60,
+            'Novus': 65,
+            'Wallaru': 70
+        };
+
+        function onWorldChange() {
+            const world = document.getElementById('worldSelect').value;
+            if (world && worlds[world]) {
+                document.getElementById('worldTotal').value = worlds[world];
+            }
+        }
+
+        // Load saved values from localStorage
+        function loadSavedValues() {
+            const saved = {
+                worldName: localStorage.getItem('worldName') || 'Wizard City',
+                worldCurrent: localStorage.getItem('worldCurrent') || '0',
+                worldTotal: localStorage.getItem('worldTotal') || '45',
+                totalCurrent: localStorage.getItem('totalCurrent') || '0',
+                totalTotal: localStorage.getItem('totalTotal') || '100',
+                questText: localStorage.getItem('questText') || 'Find Sergeant Muldoon in Unicorn Way',
+                counterText: localStorage.getItem('counterText') || 'Re-Rolls',
+                counterNum: localStorage.getItem('counterNum') || '0'
+            };
+
+            // Set input values
+            document.getElementById('worldSelect').value = saved.worldName;
+            document.getElementById('worldCurrent').value = saved.worldCurrent;
+            document.getElementById('worldTotal').value = saved.worldTotal;
+            document.getElementById('totalCurrent').value = saved.totalCurrent;
+            document.getElementById('totalTotal').value = saved.totalTotal;
+            document.getElementById('questText').value = saved.questText;
+            document.getElementById('counterText').value = saved.counterText;
+            document.getElementById('counterNum').value = saved.counterNum;
+
+            // Update display
+            updateDisplay(saved);
+        }
+
+        function updateDisplay(data) {
+            // Update world progress
+            const worldPercent = Math.min(100, Math.round((data.worldCurrent / data.worldTotal) * 100));
+            document.getElementById('worldLabel').textContent = data.worldName + ' Progress';
+            document.getElementById('worldPercentage').textContent = worldPercent + '%';
+            document.getElementById('worldBar').style.width = worldPercent + '%';
+            document.getElementById('worldBarText').textContent = data.worldCurrent + '/' + data.worldTotal;
+
+            // Update total progress
+            const totalPercent = Math.min(100, Math.round((data.totalCurrent / data.totalTotal) * 100));
+            document.getElementById('totalPercentage').textContent = totalPercent + '%';
+            document.getElementById('totalBar').style.width = totalPercent + '%';
+            document.getElementById('totalBarText').textContent = data.totalCurrent + '/' + data.totalTotal;
+
+            // Update current quest
+            document.getElementById('currentQuest').textContent = data.questText;
+
+            // Update counter
+            document.getElementById('counterLabel').textContent = data.counterText + ':';
+            document.getElementById('counterValue').textContent = data.counterNum;
+        }
+
+        function updateOverlay() {
+            const data = {
+                worldName: document.getElementById('worldSelect').value,
+                worldCurrent: parseInt(document.getElementById('worldCurrent').value),
+                worldTotal: parseInt(document.getElementById('worldTotal').value),
+                totalCurrent: parseInt(document.getElementById('totalCurrent').value),
+                totalTotal: parseInt(document.getElementById('totalTotal').value),
+                questText: document.getElementById('questText').value,
+                counterText: document.getElementById('counterText').value,
+                counterNum: parseInt(document.getElementById('counterNum').value)
+            };
+
+            // Save to localStorage
+            Object.keys(data).forEach(key => {
+                localStorage.setItem(key, data[key]);
+            });
+
+            // Update display
+            updateDisplay(data);
+        }
+
+        function toggleControls() {
+            const controls = document.getElementById('controls');
+            controls.style.display = controls.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Keyboard shortcuts for quick counter updates
+        document.addEventListener('keydown', function(e) {
+            // Press + or = to increment counter
+            if (e.key === '+' || e.key === '=') {
+                const counterInput = document.getElementById('counterNum');
+                counterInput.value = parseInt(counterInput.value) + 1;
+                updateOverlay();
+                e.preventDefault();
+            }
+            // Press - to decrement counter
+            if (e.key === '-') {
+                const counterInput = document.getElementById('counterNum');
+                counterInput.value = Math.max(0, parseInt(counterInput.value) - 1);
+                updateOverlay();
+                e.preventDefault();
+            }
+        });
+
+        // Load saved values on page load
+        window.addEventListener('load', loadSavedValues);
+    </script>
+</body>
+</html>
