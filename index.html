@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wizard101 Progression Tracker</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -275,9 +278,61 @@
             font-family: inherit;
             font-size: 14px;
         }
+
+        /* Sync Status Indicator */
+        .sync-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .sync-status.connected {
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+
+        .sync-status.disconnected {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .sync-status.syncing {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+
+        .sync-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
+    <!-- Sync Status Indicator -->
+    <div class="sync-status disconnected" id="syncStatus">
+        <div class="sync-dot"></div>
+        <span id="syncStatusText">Connecting...</span>
+    </div>
+
     <div class="container">
         <!-- World Progress Bar -->
         <div class="progress-section" id="worldProgress">
@@ -401,8 +456,124 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBe8UBVWD63u_cjBClLEcWud1iqNdBTxRc",
+            authDomain: "wiz-progression.firebaseapp.com",
+            databaseURL: "https://wiz-progression-default-rtdb.firebaseio.com",
+            projectId: "wiz-progression",
+            storageBucket: "wiz-progression.firebasestorage.app",
+            messagingSenderId: "970887822556",
+            appId: "1:970887822556:web:53d6d7e131fe0e19980819",
+            measurementId: "G-9T9M6LCT61"
+        };
+
+        // Initialize Firebase
+        let database = null;
+        let progressRef = null;
+        let isInitializing = true;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            progressRef = database.ref('progress');
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            updateSyncStatus('disconnected', 'Offline Mode');
+        }
+
         let questDatabase = {};
         let worlds = {};
+
+        // Sync status management
+        function updateSyncStatus(status, text) {
+            const statusEl = document.getElementById('syncStatus');
+            const textEl = document.getElementById('syncStatusText');
+            
+            statusEl.className = 'sync-status ' + status;
+            textEl.textContent = text;
+        }
+
+        // Sync data to Firebase
+        function syncToFirebase(data) {
+            if (!progressRef) {
+                console.log('Firebase not available, using localStorage only');
+                return;
+            }
+            
+            updateSyncStatus('syncing', 'Syncing...');
+            
+            progressRef.set(data)
+                .then(() => {
+                    console.log('Data synced successfully');
+                    updateSyncStatus('connected', 'Live Synced');
+                })
+                .catch(error => {
+                    console.error('Sync error:', error);
+                    updateSyncStatus('disconnected', 'Sync Failed');
+                });
+        }
+
+        // Listen for changes from Firebase
+        function listenToFirebaseChanges() {
+            if (!progressRef) {
+                console.log('Firebase not available, using localStorage only');
+                updateSyncStatus('disconnected', 'Offline Mode');
+                return;
+            }
+            
+            // Listen for connection status
+            const connectedRef = database.ref('.info/connected');
+            connectedRef.on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    updateSyncStatus('connected', 'Live Synced');
+                } else {
+                    updateSyncStatus('disconnected', 'Reconnecting...');
+                }
+            });
+            
+            // Listen for data changes
+            progressRef.on('value', (snapshot) => {
+                if (isInitializing) {
+                    isInitializing = false;
+                    return; // Skip the initial load
+                }
+                
+                const data = snapshot.val();
+                if (data) {
+                    console.log('Received update from Firebase:', data);
+                    
+                    // Update form inputs
+                    document.getElementById('worldSelect').value = data.worldName || 'Wizard City';
+                    document.getElementById('worldCurrent').value = data.worldCurrent || 0;
+                    document.getElementById('worldTotal').value = data.worldTotal || 39;
+                    document.getElementById('questText').value = data.questText || 'Unicorn Way';
+                    document.getElementById('counterText').value = data.counterText || 'Re-Rolls';
+                    document.getElementById('counterNum').value = data.counterNum || 0;
+                    
+                    // Update localStorage
+                    Object.keys(data).forEach(key => {
+                        localStorage.setItem(key, data[key]);
+                    });
+                    
+                    // Update display
+                    updateDisplay(data);
+                    onWorldChange();
+                    
+                    // Update quest select dropdown
+                    const questSelect = document.getElementById('questSelect');
+                    if (questSelect) {
+                        questSelect.value = data.questText || '';
+                    }
+                    
+                    updateSyncStatus('connected', 'Live Synced');
+                }
+            }, (error) => {
+                console.error('Firebase listen error:', error);
+                updateSyncStatus('disconnected', 'Connection Error');
+            });
+        }
 
         // World order for progression
         const worldOrder = [
@@ -745,6 +916,9 @@
 
             // Update display
             updateDisplay(data);
+            
+            // Sync to Firebase for live updates
+            syncToFirebase(data);
         }
 
         function calculateTotalCompletedQuests() {
@@ -828,6 +1002,11 @@
         window.addEventListener('load', async function() {
             await loadQuestData();
             loadSavedValues();
+            
+            // Start listening for Firebase changes after initial load
+            setTimeout(() => {
+                listenToFirebaseChanges();
+            }, 1000);
         });
     </script>
 </body>
