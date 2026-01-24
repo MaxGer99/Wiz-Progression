@@ -115,6 +115,8 @@
             min-height: 50px;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .current-quest-text:hover {
@@ -870,13 +872,14 @@
                 
                 if (questObj && typeof questObj === 'object') {
                     let display = questObj.name;
-                    if (questObj.area) {
-                        display += '\n[' + questObj.area + ']';
-                    }
+                    display += '\n[' + world + ']';
                     if (questObj.type) {
                         display += '\n' + questObj.type;
                     }
                     questDisplay = display;
+                } else {
+                    // Fallback if questObj is just a string
+                    questDisplay = data.questText + '\n[' + world + ']';
                 }
             }
             document.getElementById('currentQuest').textContent = questDisplay;
